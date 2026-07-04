@@ -28,6 +28,8 @@ Last validated content counts: QUIZ=204, CARDS=116, CONCEPTS=159, GLOSS=168.
 - Features: 150-question timed exam sim, flashcard SRS/Leitner mistake bank, readiness predictor, study planner, milestones, AI tutor (Anthropic API with offline fallback).
 - **WebGL tower hero visualization:** per-pane reflections, Fresnel brightening, sun-glint sweep, spandrel panels, AO, crisp mullions, bloom — with a canvas-2D fallback.
 - **Responsive:** mobile bottom tabs ≤899px; desktop sidebar + 2-column dashboard ≥900px.
+- **Hero scene (GL path):** lit tower + ground-reflection pass, ring of 14 distant skyline buildings (kind 4) and a 120-point twinkling starfield (kind 5) placed at radius > camera distance so they never occlude the tower, pulsing aviation beacon (kind 3), per-window flicker, eased entrance, idle camera-tilt breathing. Fragment-shader `vKind` branches must stay ordered high-to-low (stars 5 → skyline 4 → beacon 3 → ground 2).
+- **FX/UX layer:** particle bursts + confetti + streak float text + haptics on quiz answers, once-per-session splash intro, directional view slides keyed to tab order, tap ripples, shareable canvas scorecard (`.sharebtn` on result screens, navigator.share with download fallback), animated conic border on the home CTA.
 
 ## Validation & editing workflow
 
@@ -38,6 +40,9 @@ There is no npm/build system — validation is done with ad-hoc scripts:
 - **JS syntax:** extract the `<script>` content to a temp file and run `node --check` on it.
 - **Runtime smoke test:** `node harness.js` with jsdom stubs for `matchMedia`, `scrollTo`/`scrollIntoView`, canvas `getContext` (Proxy with `createRadialGradient` → `addColorStop`), `IntersectionObserver`, and `window.fetch`.
 - **Visual checks:** Playwright screenshots with `--use-gl=angle --use-angle=swiftshader --ignore-gpu-blocklist`; wait ≥4000ms for animations to converge before capturing.
+- A branded splash overlay shows once per browser session (guarded by `sessionStorage.fcSplash`) and self-removes at ~2.1s — screenshots taken after the 4s animation wait are unaffected; to suppress it entirely, preset `sessionStorage.setItem('fcSplash','1')`.
+- `Tower.getMode()` returns `'gl'` or `'2d'` — assert `'gl'` in harnesses to catch silent shader-compile regressions (a broken shader falls back to canvas-2D without any console error).
+- `Tower.setReadiness(n)` lights the tower to n% — useful for representative hero screenshots.
 
 ## Content authoring
 
