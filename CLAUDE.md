@@ -8,9 +8,9 @@ Floor Check — a CAPM exam prep PWA for Abhay Badhwar (Production Supervisor, w
 
 Two builds:
 - `capm-pro.html` — primary/desktop build (source of truth)
-- `capm-ios.html` — iOS PWA build. **Never `cp` from the pro build** — regenerate via `python3 make_ios.py`.
+- `capm-ios.html` — iOS PWA build. **Never `cp` from the pro build** — regenerate via `python3 make_ios.py` after any change to the pro build. The transform injects iOS standalone-PWA head tags (data-URI touch icon + manifest) and strips the Google Fonts `@import` (the pro build's only external fetch), aliasing the web fonts to iOS system fonts via `@font-face local()`.
 
-> Note: as of the initial commit, the repo contains only this file and a README. `capm-pro.html` (last validated counts: QUIZ=61, CARDS=53, CONCEPTS=100, GLOSS=78) needs to be added before content work can continue.
+Last validated content counts: QUIZ=184, CARDS=110, CONCEPTS=157, GLOSS=158.
 
 ## Hard constraints
 
@@ -41,4 +41,4 @@ There is no npm/build system — validation is done with ad-hoc scripts:
 
 ## Content authoring
 
-Abhay learns best through quizzes, scenario-based questions, and PMBOK concepts explained with analogies from glazing/curtain-wall fabrication (floor QA checks, fabrication lines, spandrel panels, the One Yonge Toronto project). Current content phase: Phase 2c — broader PMBOK process group/knowledge area coverage, more scenario questions, and EVM formula drills (SV, CV, SPI, CPI, EAC, ETC, TCPI).
+Abhay learns best through quizzes, scenario-based questions, and PMBOK concepts explained with analogies from glazing/curtain-wall fabrication (floor QA checks, fabrication lines, spandrel panels, the One Yonge Toronto project). Phase 2c (complete) added EVM forecast drills (ETC, EAC variants, TCPI-against-EAC, EV-from-%-complete), quality-vs-grade, contract types, change control, critical path, and BA verification/validation & elicitation scenarios. Next content work should rebalance toward domain d4 (Business Analysis, 27% of the exam) which remains slightly underweighted in QUIZ.
