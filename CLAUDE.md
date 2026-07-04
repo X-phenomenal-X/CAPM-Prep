@@ -10,7 +10,7 @@ Two builds:
 - `capm-pro.html` — primary/desktop build (source of truth)
 - `capm-ios.html` — iOS PWA build. **Never `cp` from the pro build** — regenerate via `python3 make_ios.py` after any change to the pro build. The transform injects iOS standalone-PWA head tags (data-URI touch icon + manifest) and strips the Google Fonts `@import` (the pro build's only external fetch), aliasing the web fonts to iOS system fonts via `@font-face local()`.
 
-Last validated content counts: QUIZ=184, CARDS=110, CONCEPTS=157, GLOSS=158.
+Last validated content counts: QUIZ=204, CARDS=116, CONCEPTS=159, GLOSS=168.
 
 ## Hard constraints
 
@@ -41,4 +41,4 @@ There is no npm/build system — validation is done with ad-hoc scripts:
 
 ## Content authoring
 
-Abhay learns best through quizzes, scenario-based questions, and PMBOK concepts explained with analogies from glazing/curtain-wall fabrication (floor QA checks, fabrication lines, spandrel panels, the One Yonge Toronto project). Phase 2c (complete) added EVM forecast drills (ETC, EAC variants, TCPI-against-EAC, EV-from-%-complete), quality-vs-grade, contract types, change control, critical path, and BA verification/validation & elicitation scenarios. Next content work should rebalance toward domain d4 (Business Analysis, 27% of the exam) which remains slightly underweighted in QUIZ.
+Abhay learns best through quizzes, scenario-based questions, and PMBOK concepts explained with analogies from glazing/curtain-wall fabrication (floor QA checks, fabrication lines, spandrel panels, the One Yonge Toronto project). Phase 2c (complete) added EVM forecast drills (ETC, EAC variants, TCPI-against-EAC, EV-from-%-complete), quality-vs-grade, contract types, change control, critical path, and BA verification/validation & elicitation scenarios. Phase 2d (complete) rebalanced QUIZ toward d4 (elicitation technique selection, requirement types, product vs project scope, solution evaluation, weighted scoring, context diagrams) and d1 fundamentals (org structures, PMO types, phase gates, rolling wave, EEFs/OPAs). Scored-domain shares are now d1 29% / d2 19% / d3 29% / d4 23% vs exam weights 36/17/20/27 — d3 remains overweighted (append-only arrays mean rebalancing is done by adding, not removing; favor d1/d4 in future phases).
