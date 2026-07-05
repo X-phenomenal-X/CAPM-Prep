@@ -37,7 +37,8 @@ Last validated content counts: QUIZ=204, CARDS=116, CONCEPTS=159, GLOSS=168.
 - **Project Charter:** first-run signable charter modal (name, exam date, why, canvas signature) stored in `progress.charter`; `window.openCharter()` reopens it. Commitment-psychology feature — don't remove the signature pad. The PM name + signature also stamp every shared scorecard.
 - **Weekly status report:** once the charter is signed and `progress.log` has ≥3 days, a "status report to the sponsor" card appears on Home every ~7 days (`progress.lastStatus` gates it) with days-on-floor, readiness, and the pace-forecast verdict.
 - **Sound:** synthesized Web Audio ticks (correct/wrong/flip/confetti-chime), opt-in via a toggle in the settings sheet (`progress.sound`, default off), suppressed in Exam Conditions mode.
-- **Exam Conditions mode:** `progress.blindMode` (toggle on quiz home) arms `session.blind` on mock/exam starts — feedback suppressed via `.blindrun` CSS + FX gate, silent auto-advance, full grading only at the end. Matches real Pearson VUE delivery.
+- **Exam Conditions mode:** `progress.blindMode` (toggle on quiz home) arms `session.blind` on mock/exam starts — feedback suppressed via `.blindrun` CSS + FX gate, silent auto-advance, full grading only at the end. Matches real Pearson VUE delivery. During blind runs `body.examenv` dims the ambient backdrop (blobs/aurora paused) for cognitive calm.
+- **Calm mode:** `progress.calm` (toggle in settings sheet) sets `body.calm` — kills decorative animation (aurora, blob drift, CTA spin, ripples, float text, gauge shimmer) and shortens view transitions, keeping functional feedback. Accessibility feature — keep it working.
 
 ## Validation & editing workflow
 

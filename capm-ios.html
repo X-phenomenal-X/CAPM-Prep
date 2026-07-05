@@ -759,6 +759,15 @@
   .station,.qmode,.today,.chartcard,.gitem,.statusrep{border-top-color:rgba(255,255,255,.15);}
   .entry summary:active{background:rgba(255,255,255,.03);}
   .result .big{background:linear-gradient(180deg,#fff 0%,currentColor 60%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  /* ===== PHASE 8 — calm mode + exam-environment shift (blueprint) ===== */
+  body.examenv .app::before{opacity:.22;animation:none;}
+  body.examenv .gblob{opacity:.22;animation-play-state:paused;}
+  body.examenv .nextact,body.examenv .today{animation:none;}
+  body.examenv .grain{opacity:.018;}
+  body.calm .app::before,body.calm .today,body.calm .nextact,body.calm .gblob,body.calm .navbtn.pop svg{animation:none!important;}
+  body.calm .fxripple,body.calm .fxfloat,body.calm .grain,body.calm .sheen{display:none!important;}
+  body.calm .view.on,body.calm .view.on.slide-r,body.calm .view.on.slide-l,body.calm .anim{animation-duration:.15s!important;}
+  body.calm .gauge i::after,body.calm .bartrack i::after{display:none;}
 </style>
 </head>
 <body>
@@ -3434,6 +3443,35 @@ GLOSS.push(
       var gear=document.getElementById('gear');
       if(gear){var _g=gear.onclick;gear.onclick=function(){if(_g)_g();paint();};}
     }
+  }catch(_){}
+})();
+
+/* ===== PHASE 8 — calm mode + exam-environment shift ===== */
+(function(){
+  function applyCalm(){try{document.body.classList.toggle('calm',!!progress.calm);}catch(_){}}
+  try{
+    var _rh4=renderHome;
+    renderHome=function(){_rh4();applyCalm();};
+  }catch(_){}
+  try{
+    var sheet=document.getElementById('sheet');
+    if(sheet&&!document.getElementById('calmTog')){
+      var row=document.createElement('div');row.className='setrow';
+      row.innerHTML='<label class="setlab">Calm mode</label><button class="blindtog slim" id="calmTog"><span class="btk"></span><span class="btlab"><b>Fewer animations, quieter surfaces</b>For focused or low-stimulation study sessions</span></button>';
+      sheet.appendChild(row);
+      var tg=document.getElementById('calmTog');
+      function paint(){tg.classList.toggle('on',!!progress.calm);}
+      tg.onclick=function(){progress.calm=!progress.calm;try{saveProgress();}catch(_){}applyCalm();paint();};
+      var gear=document.getElementById('gear');
+      if(gear){var _g2=gear.onclick;gear.onclick=function(){if(_g2)_g2();paint();};}
+    }
+  }catch(_){}
+  /* exam-environment: dim the world during Exam Conditions runs */
+  function setEnv(){try{document.body.classList.toggle('examenv',!!(session&&session.blind&&session.idx<session.list.length));}catch(_){}}
+  try{
+    var _rq4=renderQuestion;renderQuestion=function(){_rq4();setEnv();};
+    var _rr4=renderResult;renderResult=function(){_rr4();try{document.body.classList.remove('examenv');}catch(_){}};
+    var _rqh2=renderQuizHome;renderQuizHome=function(){_rqh2();try{document.body.classList.remove('examenv');}catch(_){}};
   }catch(_){}
 })();
 
