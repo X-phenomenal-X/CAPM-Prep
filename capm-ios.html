@@ -660,6 +660,34 @@
   @keyframes ctaspin{to{--ctaa:360deg;}}
   .nextact{border:1px solid transparent;background:linear-gradient(135deg,rgb(58,51,38),rgb(34,35,35)) padding-box,conic-gradient(from var(--ctaa),rgba(244,173,61,.28) 0 68%,rgba(244,173,61,.95) 84%,rgba(244,173,61,.28) 96%) border-box;animation:ctaspin 3.6s linear infinite;}
   @media (prefers-reduced-motion:reduce){.splash{display:none!important;}.nextact{animation:none!important;}}
+  /* ===== PHASE 4 — exam-sim realism (Pearson-style) + card swipes + shortcuts ===== */
+  .flagbtn{width:34px;height:34px;border-radius:10px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--mute2);transition:color var(--d1),border-color var(--d1),background var(--d1),transform var(--d1) var(--es);}
+  .flagbtn svg{width:16px;height:16px;}
+  .flagbtn.on{color:var(--amber);border-color:rgba(244,173,61,.5);background:rgba(244,173,61,.10);transform:scale(1.06);}
+  .flagbtn:active{transform:scale(.92);}
+  #opts .opt{padding-right:38px;}
+  .elimx{position:absolute;top:7px;right:8px;width:22px;height:22px;border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--mute2);font-size:15px;line-height:1;opacity:.5;transition:opacity var(--d1),color var(--d1),background var(--d1);z-index:2;}
+  .elimx:hover{opacity:1;background:rgba(255,255,255,.06);}
+  .opt{position:relative;}
+  .opt.elim{opacity:.42;text-decoration:line-through;text-decoration-color:rgba(233,106,81,.6);}
+  .opt.elim .elimx{text-decoration:none;opacity:1;color:var(--red);}
+  @keyframes tpulse{0%,100%{opacity:1;}50%{opacity:.45;}}
+  .timer.urgent{animation:tpulse 1.1s ease-in-out infinite;}
+  .rvchips{display:grid;grid-template-columns:repeat(auto-fill,minmax(34px,1fr));gap:6px;margin:10px 0 4px;}
+  .rvchip{height:32px;border-radius:9px;font-family:'JetBrains Mono';font-weight:700;font-size:11.5px;border:1px solid var(--line);color:var(--mute);background:rgba(0,0,0,.2);transition:transform var(--d1) var(--es),border-color var(--d1);position:relative;}
+  .rvchip.ok{color:var(--green);border-color:rgba(98,204,131,.35);background:rgba(98,204,131,.08);}
+  .rvchip.no{color:var(--red);border-color:rgba(233,106,81,.4);background:rgba(233,106,81,.10);}
+  .rvchip.flg::after{content:"";position:absolute;top:3px;right:3px;width:6px;height:6px;border-radius:50%;background:var(--amber);box-shadow:0 0 6px var(--amber);}
+  .rvchip:active{transform:scale(.9);}
+  .rvlegend{display:flex;gap:14px;font-size:10.5px;color:var(--mute2);font-family:'JetBrains Mono';margin:2px 2px 10px;}
+  .rvlegend .lg{display:inline-block;width:8px;height:8px;border-radius:3px;margin-right:5px;}
+  .rvlegend .lg.ok{background:var(--green);}.rvlegend .lg.no{background:var(--red);}.rvlegend .lg.flg{background:var(--amber);}
+  .rvw.hl{animation:rvhl 1.2s var(--eo);}
+  @keyframes rvhl{0%{box-shadow:0 0 0 2px var(--glass);}100%{box-shadow:0 0 0 2px transparent;}}
+  .sumchips{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin-top:12px;}
+  .sumchips span{font-family:'JetBrains Mono';font-weight:700;font-size:11px;letter-spacing:.03em;color:var(--mute);border:1px solid var(--line);border-radius:999px;padding:6px 12px;background:rgba(0,0,0,.18);}
+  .swipehint{text-align:center;font-family:'JetBrains Mono';font-size:9.5px;letter-spacing:.14em;color:var(--mute2);margin:8px 0 2px;text-transform:uppercase;}
+  .tiltwrap{touch-action:pan-y;}
 </style>
 </head>
 <body>
@@ -1844,7 +1872,7 @@ renderReview=function(){clearInterval(timerInt);var run=$('#quizRun');var res=se
 /* ===== Full 150-question timed exam simulation ===== */
 var brkInt=null;
 function fmtClock(ms){var s=Math.floor(ms/1000),hh=Math.floor(s/3600),mm=Math.floor(s%3600/60),ss=s%60;return (hh>0?hh+':'+String(mm).padStart(2,'0'):''+mm)+':'+String(ss).padStart(2,'0');}
-function startCountdown(){clearInterval(timerInt);clearInterval(brkInt);timerInt=setInterval(function(){if(!session||session.mode!=='exam'){clearInterval(timerInt);return;}var rem=Math.max(0,session.examEndTs-Date.now());var el=$('#timer');if(el){el.textContent=fmtClock(rem);el.style.color=rem<300000?'var(--red)':'';}if(rem<=0){clearInterval(timerInt);renderResult();}},250);}
+function startCountdown(){clearInterval(timerInt);clearInterval(brkInt);timerInt=setInterval(function(){if(!session||session.mode!=='exam'){clearInterval(timerInt);return;}var rem=Math.max(0,session.examEndTs-Date.now());var el=$('#timer');if(el){el.textContent=fmtClock(rem);el.style.color=rem<300000?'var(--red)':'';el.classList.toggle('urgent',rem<300000);}if(rem<=0){clearInterval(timerInt);renderResult();}},250);}
 function drawN(id,n){var pool=QUIZ.filter(function(q){return q.d===id;}),out=[];if(!pool.length)return out;while(out.length<n)out=out.concat(shuffle(pool));return out.slice(0,n);}
 function startExam(){clearInterval(brkInt);var plan={d1:50,d2:25,d3:30,d4:35,fx:10},list=[];Object.keys(plan).forEach(function(id){list=list.concat(drawN(id,plan[id]));});list=shuffle(list);
   session={list:list,idx:0,correct:0,mode:'exam',answered:false,byDom:{},results:[],examEndTs:Date.now()+180*60000,breakTaken:false};renderQuestion();startCountdown();}
@@ -2883,6 +2911,193 @@ GLOSS.push(
       }catch(_){}
     };
   }catch(_){}
+})();
+
+/* ===== PHASE 4 — Pearson-style exam tools, review navigator, card swipes, keyboard shortcuts ===== */
+(function(){
+  /* flag-for-review + option elimination, injected after each question render */
+  try{
+    var _rq2=renderQuestion;
+    renderQuestion=function(){
+      _rq2();
+      try{
+        if(!session||session.idx>=session.list.length)return;
+        if(!document.getElementById('opts')&&!document.getElementById('matchq')&&!document.getElementById('hotspot'))return;
+        var qh=document.querySelector('#quizRun .qhead');
+        if(qh&&!document.getElementById('qFlag')){
+          session.flags=session.flags||{};
+          var i=session.idx;
+          var fbtn=document.createElement('button');
+          fbtn.className='flagbtn'+(session.flags[i]?' on':'');fbtn.id='qFlag';fbtn.title='Flag for review (F)';
+          fbtn.innerHTML='<svg viewBox="0 0 24 24" fill="'+(session.flags[i]?'currentColor':'none')+'" stroke="currentColor" stroke-width="2"><path d="M4 21V4a1 1 0 0 1 1-1h11l-2 4 2 4H5"/></svg>';
+          fbtn.onclick=function(){
+            session.flags[i]=!session.flags[i];
+            fbtn.classList.toggle('on',!!session.flags[i]);
+            fbtn.querySelector('svg').setAttribute('fill',session.flags[i]?'currentColor':'none');
+          };
+          var tm=qh.querySelector('.timer');
+          if(tm)qh.insertBefore(fbtn,tm);else qh.appendChild(fbtn);
+        }
+        document.querySelectorAll('#quizRun #opts .opt').forEach(function(o){
+          if(o.querySelector('.elimx'))return;
+          var x=document.createElement('span');x.className='elimx';x.title='Eliminate this option';x.textContent='×';
+          x.addEventListener('pointerdown',function(ev){ev.stopPropagation();});
+          x.onclick=function(ev){ev.stopPropagation();if(o.classList.contains('lock'))return;o.classList.toggle('elim');};
+          o.appendChild(x);
+        });
+      }catch(_){}
+    };
+  }catch(_){}
+
+  /* review navigator grid (Pearson item-review style) */
+  try{
+    var _rv=renderReview;
+    renderReview=function(){
+      _rv();
+      try{
+        var run=document.getElementById('quizRun');
+        var res=(session&&session.results)||[];if(!res.length||run.querySelector('.rvchips'))return;
+        var flags=(session&&session.flags)||{};
+        var grid=document.createElement('div');grid.className='rvchips';
+        res.forEach(function(r,i){
+          var b=document.createElement('button');
+          b.className='rvchip '+(r.ok?'ok':'no')+(flags[i]?' flg':'');
+          b.textContent=i+1;
+          b.onclick=function(){
+            var it=run.querySelectorAll('.rvw')[i];if(!it)return;
+            it.scrollIntoView({behavior:'smooth',block:'start'});
+            it.classList.remove('hl');void it.offsetWidth;it.classList.add('hl');
+          };
+          grid.appendChild(b);
+        });
+        var legend=document.createElement('div');legend.className='rvlegend';
+        var anyFlag=Object.keys(flags).some(function(k){return flags[k];});
+        legend.innerHTML='<span><i class="lg ok"></i>correct</span><span><i class="lg no"></i>missed</span>'+(anyFlag?'<span><i class="lg flg"></i>flagged</span>':'');
+        var qh2=run.querySelector('.qhead');
+        if(qh2&&qh2.nextSibling){run.insertBefore(grid,qh2.nextSibling);run.insertBefore(legend,grid.nextSibling);}
+        else{run.appendChild(grid);run.appendChild(legend);}
+      }catch(_){}
+    };
+  }catch(_){}
+
+  /* session summary chips on the result screen */
+  try{
+    var _rs=renderResult;
+    renderResult=function(){
+      _rs();
+      try{
+        var res2=document.querySelector('#quizRun .result');
+        if(!res2||res2.querySelector('.sumchips'))return;
+        var rr=(session&&session.results)||[];if(!rr.length)return;
+        var best=0,cur=0;rr.forEach(function(r){cur=r.ok?cur+1:0;if(cur>best)best=cur;});
+        var chips=[],el=null;
+        if(session.startTs)el=Date.now()-session.startTs;
+        else if(session.examEndTs)el=Date.now()-(session.examEndTs-180*60000);
+        if(el&&el>0&&el<12*3600000)chips.push('⏱ '+fmtClock(el));
+        chips.push('🔥 best run '+best);
+        chips.push('+'+rr.length+' reps');
+        var flags2=(session&&session.flags)||{};
+        var nf=Object.keys(flags2).filter(function(k){return flags2[k];}).length;
+        if(nf)chips.push('⚑ '+nf+' flagged');
+        var d3=document.createElement('div');d3.className='sumchips';
+        d3.innerHTML=chips.map(function(c){return '<span>'+c+'</span>';}).join('');
+        var v=res2.querySelector('.verdict');
+        if(v&&v.nextSibling)res2.insertBefore(d3,v.nextSibling);else res2.appendChild(d3);
+      }catch(_){}
+    };
+  }catch(_){}
+
+  /* flashcard swipe gestures: right = know it, left = review */
+  try{
+    var tw=document.querySelector('.tiltwrap'),fl=document.getElementById('flip');
+    var dw=document.querySelector('.deckwrap');
+    if(dw&&!dw.querySelector('.swipehint')){
+      var sh=document.createElement('div');sh.className='swipehint';
+      sh.textContent='← swipe: review · know it →';
+      var kr=document.getElementById('knownRow');
+      if(kr)dw.insertBefore(sh,kr);
+    }
+    if(tw&&fl){
+      var sx=0,sy=0,dx=0,dragOn=false,moved=false;
+      fl.addEventListener('pointerdown',function(e){dragOn=true;moved=false;sx=e.clientX;sy=e.clientY;dx=0;});
+      window.addEventListener('pointermove',function(e){
+        if(!dragOn)return;
+        dx=e.clientX-sx;var dy=e.clientY-sy;
+        if(!moved&&Math.abs(dx)>12&&Math.abs(dx)>Math.abs(dy)*1.4)moved=true;
+        if(moved){
+          tw.style.transition='none';
+          tw.style.transform='translateX('+dx+'px) rotate('+(dx*0.04)+'deg)';
+          tw.style.opacity=String(Math.max(0.35,1-Math.abs(dx)/340));
+        }
+      });
+      window.addEventListener('pointerup',function(){
+        if(!dragOn)return;dragOn=false;
+        if(moved&&Math.abs(dx)>90&&cardOrder.length){
+          var known=dx>0,dir=dx>0?1:-1;
+          tw.style.transition='transform .3s cubic-bezier(.4,0,.2,1),opacity .3s';
+          tw.style.transform='translateX('+dir*480+'px) rotate('+dir*18+'deg)';
+          tw.style.opacity='0';
+          try{if(navigator.vibrate)navigator.vibrate(10);}catch(_){}
+          setTimeout(function(){
+            try{
+              var c=cardOrder[cardIdx];
+              progress.cards[c.term]=known?'known':'review';
+              logToday();saveProgress();
+              cardIdx=(cardIdx+1)%cardOrder.length;
+              renderCard();
+            }catch(_){}
+            tw.style.transition='none';
+            tw.style.transform='translateX('+(-dir*56)+'px)';
+            requestAnimationFrame(function(){
+              tw.style.transition='transform .35s var(--es),opacity .35s';
+              tw.style.transform='';tw.style.opacity='1';
+              setTimeout(function(){tw.style.transition='';},380);
+            });
+          },290);
+        }else{
+          tw.style.transition='transform .4s var(--es),opacity .3s';
+          tw.style.transform='';tw.style.opacity='1';
+          setTimeout(function(){tw.style.transition='';},420);
+        }
+        if(moved){
+          var swallow=function(ev){ev.stopPropagation();ev.preventDefault();};
+          fl.addEventListener('click',swallow,true);
+          setTimeout(function(){fl.removeEventListener('click',swallow,true);},80);
+        }
+      });
+    }
+  }catch(_){}
+
+  /* desktop keyboard shortcuts */
+  document.addEventListener('keydown',function(e){
+    if(e.metaKey||e.ctrlKey||e.altKey)return;
+    var tag=(e.target&&e.target.tagName||'').toLowerCase();
+    if(tag==='input'||tag==='select'||tag==='textarea')return;
+    var vq=document.getElementById('v-quiz'),qr=document.getElementById('quizRun');
+    if(vq&&vq.classList.contains('on')&&qr&&qr.style.display!=='none'){
+      var k=(e.key||'').toLowerCase();
+      var idx=-1;
+      if(k.length===1&&k>='1'&&k<='5')idx=+k-1;
+      else if(k.length===1&&k>='a'&&k<='e')idx='abcde'.indexOf(k);
+      if(idx>=0){
+        var os=qr.querySelectorAll('#opts .opt');
+        if(os[idx]&&!os[idx].classList.contains('lock')){os[idx].click();e.preventDefault();}
+        return;
+      }
+      if(k==='enter'){var nb=document.getElementById('qNext');if(nb&&!nb.disabled){nb.click();e.preventDefault();}return;}
+      if(k==='f'){var fbt=document.getElementById('qFlag');if(fbt){fbt.click();e.preventDefault();}return;}
+      return;
+    }
+    var vc=document.getElementById('v-cards');
+    if(vc&&vc.classList.contains('on')){
+      var k2=e.key;
+      if(k2===' '||k2==='ArrowUp'){var f3=document.getElementById('flip');if(f3){f3.click();e.preventDefault();}return;}
+      if(k2==='ArrowRight'){var b3=document.getElementById('cardNext');if(b3){b3.click();e.preventDefault();}return;}
+      if(k2==='ArrowLeft'){var b4=document.getElementById('cardPrev');if(b4){b4.click();e.preventDefault();}return;}
+      if((k2||'').toLowerCase()==='k'){var b5=document.getElementById('kKnow');if(b5&&b5.offsetParent)b5.click();return;}
+      if((k2||'').toLowerCase()==='r'){var b6=document.getElementById('kRev');if(b6&&b6.offsetParent)b6.click();return;}
+    }
+  });
 })();
 
 /* INIT */
