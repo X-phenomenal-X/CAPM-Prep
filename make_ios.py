@@ -69,8 +69,8 @@ def main():
 
     icon_uri = "data:image/png;base64," + base64.b64encode(build_icon_png()).decode()
     manifest = {
-        "name": "Floor Check — CAPM Prep",
-        "short_name": "Floor Check",
+        "name": "CAPM Prep",
+        "short_name": "CAPM Prep",
         "display": "standalone",
         "start_url": ".",
         "background_color": "#0a0d11",
@@ -86,7 +86,7 @@ def main():
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Floor Check">
+<meta name="apple-mobile-web-app-title" content="CAPM Prep">
 <meta name="theme-color" content="#0a0d11">
 <meta name="format-detection" content="telephone=no">
 <link rel="apple-touch-icon" href="{icon_uri}">
