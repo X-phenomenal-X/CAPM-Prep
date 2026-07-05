@@ -6,9 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **CAPM Prep** (codename Floor Check — internal names like `Tower`, `fcSplash`, and the repo copy keep the codename) — a CAPM exam prep PWA for Abhay Badhwar (Production Supervisor, window/door glazing & fabrication, Markham ON), studying for the PMI CAPM via UofT Course 4181. The app is a **single-file, zero-dependency, fully offline HTML PWA**.
 
-Two builds:
+Three builds — `capm-pro.html` is the source of truth; the other two are **generated, never hand-edited**:
 - `capm-pro.html` — primary/desktop build (source of truth)
-- `capm-ios.html` — iOS PWA build. **Never `cp` from the pro build** — regenerate via `python3 make_ios.py` after any change to the pro build. The transform injects iOS standalone-PWA head tags (data-URI touch icon + manifest) and strips the Google Fonts `@import` (the pro build's only external fetch), aliasing the web fonts to iOS system fonts via `@font-face local()`.
+- `capm-ios.html` — iOS PWA build, regenerate via `python3 make_ios.py`. Injects iOS standalone-PWA head tags (data-URI touch icon + manifest) and strips the Google Fonts `@import` (the pro build's only external fetch), aliasing the web fonts to iOS system fonts via `@font-face local()`.
+- `capm-glass.html` — Liquid Glass build, regenerate via `python3 make_glass.py`. Pure reskin + motion layer: frosted translucent panels (backdrop-filter), a drifting 3-blob color field behind the app, a floating glass dock on mobile, and 3D perspective view transitions (overrides the `viewIn`/`slideInR`/`slideInL` keyframes). Same content, engine, and storage keys — progress carries across builds.
+
+After any change to the pro build, regenerate **both** derived builds.
 
 Last validated content counts: QUIZ=204, CARDS=116, CONCEPTS=159, GLOSS=168.
 
