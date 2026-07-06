@@ -15,9 +15,11 @@ After any change to the pro build, regenerate **both** derived builds.
 
 Last validated content counts: QUIZ=204, CARDS=116, CONCEPTS=159, GLOSS=168.
 
-## Hard constraints
+There is also a **next-gen React Three Fiber track** (owner-sanctioned 2026-07-05, superseding the single-file rule *for this track only*): source in `next/` (Vite + React + R3F + drei + postprocessing), built with `cd next && npm install && npm run build` into `app/` (committed, served by GitHub Pages at `/CAPM-Prep/app/`). It reads the classic app's `capm_pro_v1` localStorage (same origin on Pages) and ports the readiness core formula in `next/src/readiness.js` — keep that in sync if `readinessReport()` changes. No runtime asset fetches (procedural `<Environment>` with Lightformers, no HDRIs) so it works offline after first load.
 
-- **One HTML file.** All JS, CSS, and content stay inline in a single HTML file — no external dependencies, ever (no CDNs, no separate .js/.css files in the shipped build).
+## Hard constraints (classic builds)
+
+- **One HTML file.** All JS, CSS, and content stay inline in a single HTML file — no external dependencies, ever (no CDNs, no separate .js/.css files in the shipped build). Applies to `capm-pro/ios/glass.html`, not the `next/` track.
 - **SRS/flashcard array indices are append-only.** Never insert into or reorder existing items in the content arrays (`QUIZ`, `CARDS`, `CONCEPTS`, `GLOSS`) — saved SRS/Leitner state references items by index.
 - **New JS goes before the `/* INIT */` marker.** Keep `capm-pro.html` and any extracted engine files in sync.
 - **Animations must be time-based**, driven by `performance.now()` + exponential decay — never frame-count-based. Frame-based animation stalls under headless Playwright's throttled rAF.
