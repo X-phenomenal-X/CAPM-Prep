@@ -15,9 +15,11 @@ After any change to the pro build, regenerate **both** derived builds.
 
 Last validated content counts: QUIZ=204, CARDS=116, CONCEPTS=159, GLOSS=168.
 
-## Hard constraints
+There is also a **next-gen React Three Fiber track** (owner-sanctioned 2026-07-05, superseding the single-file rule *for this track only*): source in `next/` (Vite + React + R3F + drei + postprocessing), built with `cd next && npm install && npm run build` into `app/` (committed, served by GitHub Pages at `/CAPM-Prep/app/`). It reads the classic app's `capm_pro_v1` localStorage (same origin on Pages) and ports the readiness core formula in `next/src/readiness.js` — keep that in sync if `readinessReport()` changes. No runtime asset fetches (procedural `<Environment>` with Lightformers, no HDRIs) so it works offline after first load.
 
-- **One HTML file.** All JS, CSS, and content stay inline in a single HTML file — no external dependencies, ever (no CDNs, no separate .js/.css files in the shipped build).
+## Hard constraints (classic builds)
+
+- **One HTML file.** All JS, CSS, and content stay inline in a single HTML file — no external dependencies, ever (no CDNs, no separate .js/.css files in the shipped build). Applies to `capm-pro/ios/glass.html`, not the `next/` track.
 - **SRS/flashcard array indices are append-only.** Never insert into or reorder existing items in the content arrays (`QUIZ`, `CARDS`, `CONCEPTS`, `GLOSS`) — saved SRS/Leitner state references items by index.
 - **New JS goes before the `/* INIT */` marker.** Keep `capm-pro.html` and any extracted engine files in sync.
 - **Animations must be time-based**, driven by `performance.now()` + exponential decay — never frame-count-based. Frame-based animation stalls under headless Playwright's throttled rAF.
@@ -37,7 +39,8 @@ Last validated content counts: QUIZ=204, CARDS=116, CONCEPTS=159, GLOSS=168.
 - **Project Charter:** first-run signable charter modal (name, exam date, why, canvas signature) stored in `progress.charter`; `window.openCharter()` reopens it. Commitment-psychology feature — don't remove the signature pad. The PM name + signature also stamp every shared scorecard.
 - **Weekly status report:** once the charter is signed and `progress.log` has ≥3 days, a "status report to the sponsor" card appears on Home every ~7 days (`progress.lastStatus` gates it) with days-on-floor, readiness, and the pace-forecast verdict.
 - **Sound:** synthesized Web Audio ticks (correct/wrong/flip/confetti-chime), opt-in via a toggle in the settings sheet (`progress.sound`, default off), suppressed in Exam Conditions mode.
-- **Exam Conditions mode:** `progress.blindMode` (toggle on quiz home) arms `session.blind` on mock/exam starts — feedback suppressed via `.blindrun` CSS + FX gate, silent auto-advance, full grading only at the end. Matches real Pearson VUE delivery.
+- **Exam Conditions mode:** `progress.blindMode` (toggle on quiz home) arms `session.blind` on mock/exam starts — feedback suppressed via `.blindrun` CSS + FX gate, silent auto-advance, full grading only at the end. Matches real Pearson VUE delivery. During blind runs `body.examenv` dims the ambient backdrop (blobs/aurora paused) for cognitive calm.
+- **Calm mode:** `progress.calm` (toggle in settings sheet) sets `body.calm` — kills decorative animation (aurora, blob drift, CTA spin, ripples, float text, gauge shimmer) and shortens view transitions, keeping functional feedback. Accessibility feature — keep it working.
 
 ## Validation & editing workflow
 
@@ -46,6 +49,8 @@ There is no npm/build system — validation is done with ad-hoc scripts:
 - **Edits to the HTML:** use Python `str.replace`, asserting `h.count(old) == n` before each edit to catch unexpected duplicate matches.
 - **CSS integrity:** awk brace-balance check over the `<style>` block.
 - **JS syntax:** extract the `<script>` content to a temp file and run `node --check` on it.
+- **Storage:** `Store` prefers the legacy `window.storage` API but persists to `localStorage['capm_pro_v1']` as fallback/mirror — required for GitHub Pages persistence and the `app/` R3F bridge. Don't remove the localStorage layer.
+- **Deep links:** classic builds handle `#drill=d1..d4|fx` (starts a domain drill) and `#mock` (starts a mock) on load — used by the 3D app's Drill/Mock CTAs.
 - **Runtime smoke test:** `node harness.js` with jsdom stubs for `matchMedia`, `scrollTo`/`scrollIntoView`, canvas `getContext` (Proxy with `createRadialGradient` → `addColorStop`), `IntersectionObserver`, and `window.fetch`.
 - **Visual checks:** Playwright screenshots with `--use-gl=angle --use-angle=swiftshader --ignore-gpu-blocklist`; wait ≥4000ms for animations to converge before capturing.
 - A branded splash overlay shows once per browser session (guarded by `sessionStorage.fcSplash`) and self-removes at ~2.1s — screenshots taken after the 4s animation wait are unaffected; to suppress it entirely, preset `sessionStorage.setItem('fcSplash','1')`.
