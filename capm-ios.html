@@ -1258,8 +1258,11 @@ const ADV=[
  {q:'How well is the solution understood?',opts:[{l:'Proven — we have built it before',p:2,a:0},{l:'Partly known',p:1,a:1},{l:'Novel or experimental',p:0,a:2}]},
 ];
 const Store={mem:{},
-  async load(k,def){try{const r=await window.storage.get(k);if(r&&r.value!=null)return JSON.parse(r.value);}catch(e){}return (k in this.mem)?this.mem[k]:def;},
-  async save(k,v){this.mem[k]=v;try{await window.storage.set(k,JSON.stringify(v));}catch(e){}}};
+  async load(k,def){try{const r=await window.storage.get(k);if(r&&r.value!=null)return JSON.parse(r.value);}catch(e){}
+    try{const s=localStorage.getItem(k);if(s!=null)return JSON.parse(s);}catch(e){}
+    return (k in this.mem)?this.mem[k]:def;},
+  async save(k,v){this.mem[k]=v;try{await window.storage.set(k,JSON.stringify(v));}catch(e){}
+    try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
 const PKEY='capm_pro_v1';
 let progress={domains:{},mock:{best:0,last:0,taken:0,history:[]},log:[],cards:{},match:{best:0},srs:{},goal:20,examDate:null,daily:null,ach:{}};
 
@@ -3473,6 +3476,20 @@ GLOSS.push(
     var _rr4=renderResult;renderResult=function(){_rr4();try{document.body.classList.remove('examenv');}catch(_){}};
     var _rqh2=renderQuizHome;renderQuizHome=function(){_rqh2();try{document.body.classList.remove('examenv');}catch(_){}};
   }catch(_){}
+})();
+
+/* ===== deep links from the 3D app: #drill=dX | #mock ===== */
+(function(){
+  function run(){
+    try{
+      var h2=location.hash||'';
+      var m=h2.match(/^#drill=(d[1-4]|fx)$/);
+      if(m&&typeof startDomain==='function'){go('quiz');startDomain(m[1]);history.replaceState(null,'',location.pathname+location.search);return;}
+      if(h2==='#mock'&&typeof startMock==='function'){go('quiz');startMock();history.replaceState(null,'',location.pathname+location.search);}
+    }catch(_){}
+  }
+  if(document.readyState==='complete')setTimeout(run,700);
+  else window.addEventListener('load',function(){setTimeout(run,700);});
 })();
 
 /* INIT */

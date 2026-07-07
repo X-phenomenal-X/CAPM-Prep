@@ -57,3 +57,38 @@ export function readinessPct(progress) {
 export function charterName(progress) {
   return progress && progress.charter && progress.charter.name ? progress.charter.name : null;
 }
+
+/* Port of the classic app's pace forecast: linear regression over mock
+   history, projected to the 70% pass line. */
+export function forecast(progress) {
+  const hist = (progress && progress.mock && progress.mock.history) || [];
+  const pts = hist
+    .filter((h) => h && h.d && typeof h.s === 'number')
+    .map((h) => ({ t: Date.parse(h.d + 'T00:00:00'), s: h.s }))
+    .filter((p) => isFinite(p.t))
+    .sort((a, b) => a.t - b.t);
+  if (pts.length < 2) return { state: 'need', pts: pts.map((p) => p.s) };
+  const t0 = pts[0].t;
+  const xs = pts.map((p) => (p.t - t0) / 86400000);
+  const ys = pts.map((p) => p.s);
+  const n = xs.length;
+  let sx = 0, sy = 0, sxx = 0, sxy = 0;
+  for (let i = 0; i < n; i++) { sx += xs[i]; sy += ys[i]; sxx += xs[i] * xs[i]; sxy += xs[i] * ys[i]; }
+  const den = n * sxx - sx * sx;
+  const b = den ? (n * sxy - sx * sy) / den : 0;
+  const a = (sy - b * sx) / n;
+  const last = ys[n - 1];
+  const best = Math.max(...ys);
+  if (best >= 70 || last >= 70) return { state: 'hit', best, last, pts: ys };
+  if (b <= 0.05) return { state: 'flat', last, pts: ys };
+  const nowDays = (Date.now() - t0) / 86400000;
+  const targetX = (70 - a) / b;
+  const daysFromNow = Math.max(0, Math.ceil(targetX - nowDays));
+  const out = { state: 'project', date: new Date(Date.now() + daysFromNow * 86400000), daysFromNow, last, pts: ys };
+  if (progress.examDate) {
+    const dte = Math.ceil((Date.parse(progress.examDate + 'T00:00:00') - Date.now()) / 86400000);
+    out.margin = dte - daysFromNow;
+    out.onTrack = out.margin >= 0;
+  }
+  return out;
+}

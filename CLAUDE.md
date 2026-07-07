@@ -49,6 +49,8 @@ There is no npm/build system — validation is done with ad-hoc scripts:
 - **Edits to the HTML:** use Python `str.replace`, asserting `h.count(old) == n` before each edit to catch unexpected duplicate matches.
 - **CSS integrity:** awk brace-balance check over the `<style>` block.
 - **JS syntax:** extract the `<script>` content to a temp file and run `node --check` on it.
+- **Storage:** `Store` prefers the legacy `window.storage` API but persists to `localStorage['capm_pro_v1']` as fallback/mirror — required for GitHub Pages persistence and the `app/` R3F bridge. Don't remove the localStorage layer.
+- **Deep links:** classic builds handle `#drill=d1..d4|fx` (starts a domain drill) and `#mock` (starts a mock) on load — used by the 3D app's Drill/Mock CTAs.
 - **Runtime smoke test:** `node harness.js` with jsdom stubs for `matchMedia`, `scrollTo`/`scrollIntoView`, canvas `getContext` (Proxy with `createRadialGradient` → `addColorStop`), `IntersectionObserver`, and `window.fetch`.
 - **Visual checks:** Playwright screenshots with `--use-gl=angle --use-angle=swiftshader --ignore-gpu-blocklist`; wait ≥4000ms for animations to converge before capturing.
 - A branded splash overlay shows once per browser session (guarded by `sessionStorage.fcSplash`) and self-removes at ~2.1s — screenshots taken after the 4s animation wait are unaffected; to suppress it entirely, preset `sessionStorage.setItem('fcSplash','1')`.
