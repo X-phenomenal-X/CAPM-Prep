@@ -2,11 +2,12 @@
 // GitHub Pages) and reproduces its readiness core formula, so the R3F
 // tower lights to the learner's true state.
 const PKEY = 'capm_pro_v1';
-const DOMAINS = [
-  { id: 'd1', weight: 36 },
-  { id: 'd2', weight: 17 },
-  { id: 'd3', weight: 20 },
-  { id: 'd4', weight: 27 },
+
+export const DOMAINS = [
+  { id: 'd1', code: 'I', name: 'Fundamentals & Core Concepts', short: 'Fundamentals', weight: 36, color: '#6db5c9' },
+  { id: 'd2', code: 'II', name: 'Predictive, Plan-Based', short: 'Predictive', weight: 17, color: '#f0a830' },
+  { id: 'd3', code: 'III', name: 'Agile Frameworks', short: 'Agile', weight: 20, color: '#5fc27e' },
+  { id: 'd4', code: 'IV', name: 'Business Analysis', short: 'Business Analysis', weight: 27, color: '#bd92d6' },
 ];
 
 export function loadProgress() {
@@ -19,21 +20,30 @@ export function loadProgress() {
   }
 }
 
+function masteryOf(progress, id) {
+  const x = progress && progress.domains ? progress.domains[id] : null;
+  return x && x.attempted ? x.correct / x.attempted : 0;
+}
+function attemptedOf(progress, id) {
+  const x = progress && progress.domains ? progress.domains[id] : null;
+  return x ? x.attempted : 0;
+}
+
+export function domainStats(progress) {
+  return DOMAINS.map((d) => ({
+    ...d,
+    mastery: masteryOf(progress, d.id),
+    attempted: attemptedOf(progress, d.id),
+  }));
+}
+
 export function readinessPct(progress) {
   if (!progress || !progress.domains) return null;
-  const masteryOf = (id) => {
-    const x = progress.domains[id];
-    return x && x.attempted ? x.correct / x.attempted : 0;
-  };
-  const attemptedOf = (id) => {
-    const x = progress.domains[id];
-    return x ? x.attempted : 0;
-  };
   let practice = 0;
   let att = 0;
   for (const d of DOMAINS) {
-    practice += (d.weight / 100) * masteryOf(d.id);
-    att += attemptedOf(d.id);
+    practice += (d.weight / 100) * masteryOf(progress, d.id);
+    att += attemptedOf(progress, d.id);
   }
   practice *= 100;
   const mk = progress.mock || {};
