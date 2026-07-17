@@ -8,9 +8,8 @@ Transform (keeps the single-file, zero-dependency constraint):
   1. Inject iOS/PWA head tags after the viewport meta: standalone display,
      status-bar style, app title, theme color, a data-URI apple-touch-icon,
      and a data-URI web app manifest.
-  2. Strip the Google Fonts @import (the pro build's only external fetch) so
-     the iOS build is fully offline-deterministic, and alias the three web
-     fonts to local iOS system fonts via @font-face local() sources.
+  2. Refine the cross-platform offline font aliases to iOS-native system
+     fonts via @font-face local() sources.
 
 Every replacement asserts its match count first, per the repo's editing
 workflow, so an upstream change that moves an anchor fails loudly here
@@ -24,9 +23,9 @@ import zlib
 SRC = "capm-pro.html"
 OUT = "capm-ios.html"
 
-VOID = (0x0A, 0x0D, 0x11)      # --void
-GLASS = (0x76, 0xC4, 0xD8)     # --glass
-GLASSDIM = (0x4F, 0x93, 0xA6)  # --glassdim
+VOID = (0x07, 0x0A, 0x0D)      # --void
+GLASS = (0x8F, 0xD8, 0xE7)     # --glass
+GLASSDIM = (0x5A, 0xA6, 0xB7)  # --glassdim
 
 
 def build_icon_png(size=180):
@@ -73,37 +72,37 @@ def main():
         "short_name": "CAPM Prep",
         "display": "standalone",
         "start_url": ".",
-        "background_color": "#0a0d11",
-        "theme_color": "#0a0d11",
+        "background_color": "#070a0d",
+        "theme_color": "#070a0d",
         "icons": [{"src": icon_uri, "sizes": "180x180", "type": "image/png"}],
     }
     manifest_uri = ("data:application/manifest+json;base64,"
                     + base64.b64encode(json.dumps(manifest).encode()).decode())
 
     viewport = ('<meta name="viewport" content="width=device-width, '
-                'initial-scale=1.0, viewport-fit=cover, maximum-scale=1">')
+                'initial-scale=1.0, viewport-fit=cover">')
     ios_head = viewport + f'''
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="CAPM Prep">
-<meta name="theme-color" content="#0a0d11">
+<meta name="theme-color" content="#070a0d">
 <meta name="format-detection" content="telephone=no">
 <link rel="apple-touch-icon" href="{icon_uri}">
 <link rel="manifest" href="{manifest_uri}">'''
     h = replace(h, viewport, ios_head)
 
-    # Fully offline: drop the Google Fonts fetch, alias the families to
-    # fonts that ship with iOS so the 100+ bare font-family refs still bind.
-    gimport = ("@import url('https://fonts.googleapis.com/css2?family="
-               "Space+Grotesk:wght@400;500;600;700&family="
-               "Hanken+Grotesque:wght@400;500;600;700&family="
-               "JetBrains+Mono:wght@500;700&display=swap');")
+    # Refine the cross-platform aliases to iOS-first families so the 100+
+    # bare font-family references bind to Apple's native typography offline.
+    system_fonts = """/* Cross-platform system aliases keep every build crisp and fully offline. */
+  @font-face{font-family:'Space Grotesk';src:local('Aptos Display'),local('Segoe UI Variable Display'),local('SF Pro Display'),local('Segoe UI'),local('Helvetica Neue');font-weight:400 700;}
+  @font-face{font-family:'Hanken Grotesque';src:local('Aptos'),local('Segoe UI Variable Text'),local('SF Pro Text'),local('Segoe UI'),local('Helvetica Neue');font-weight:400 700;}
+  @font-face{font-family:'JetBrains Mono';src:local('Cascadia Mono'),local('Cascadia Code'),local('SF Mono'),local('Menlo'),local('Consolas');font-weight:400 700;}"""
     local_fonts = """/* iOS build: web fonts aliased to system fonts (offline) */
   @font-face{font-family:'Space Grotesk';src:local('SF Pro Display'),local('Helvetica Neue');}
   @font-face{font-family:'Hanken Grotesque';src:local('SF Pro Text'),local('Helvetica Neue');}
   @font-face{font-family:'JetBrains Mono';src:local('SF Mono'),local('Menlo'),local('Courier New');}"""
-    h = replace(h, gimport, local_fonts)
+    h = replace(h, system_fonts, local_fonts)
 
     open(OUT, "w", encoding="utf-8").write(h)
     print(f"wrote {OUT} ({len(h):,} bytes)")
