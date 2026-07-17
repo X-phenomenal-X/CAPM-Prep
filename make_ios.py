@@ -23,9 +23,9 @@ import zlib
 SRC = "capm-pro.html"
 OUT = "capm-ios.html"
 
-VOID = (0x0A, 0x0D, 0x11)      # --void
-GLASS = (0x76, 0xC4, 0xD8)     # --glass
-GLASSDIM = (0x4F, 0x93, 0xA6)  # --glassdim
+VOID = (0x07, 0x0A, 0x0D)      # --void
+GLASS = (0x8F, 0xD8, 0xE7)     # --glass
+GLASSDIM = (0x5A, 0xA6, 0xB7)  # --glassdim
 
 
 def build_icon_png(size=180):
@@ -72,21 +72,21 @@ def main():
         "short_name": "CAPM Prep",
         "display": "standalone",
         "start_url": ".",
-        "background_color": "#0a0d11",
-        "theme_color": "#0a0d11",
+        "background_color": "#070a0d",
+        "theme_color": "#070a0d",
         "icons": [{"src": icon_uri, "sizes": "180x180", "type": "image/png"}],
     }
     manifest_uri = ("data:application/manifest+json;base64,"
                     + base64.b64encode(json.dumps(manifest).encode()).decode())
 
     viewport = ('<meta name="viewport" content="width=device-width, '
-                'initial-scale=1.0, viewport-fit=cover, maximum-scale=1">')
+                'initial-scale=1.0, viewport-fit=cover">')
     ios_head = viewport + f'''
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="CAPM Prep">
-<meta name="theme-color" content="#0a0d11">
+<meta name="theme-color" content="#070a0d">
 <meta name="format-detection" content="telephone=no">
 <link rel="apple-touch-icon" href="{icon_uri}">
 <link rel="manifest" href="{manifest_uri}">'''
@@ -95,8 +95,8 @@ def main():
     # Refine the cross-platform aliases to iOS-first families so the 100+
     # bare font-family references bind to Apple's native typography offline.
     system_fonts = """/* Cross-platform system aliases keep every build crisp and fully offline. */
-  @font-face{font-family:'Space Grotesk';src:local('Segoe UI Variable Display'),local('Aptos Display'),local('SF Pro Display'),local('Segoe UI'),local('Helvetica Neue');font-weight:400 700;}
-  @font-face{font-family:'Hanken Grotesque';src:local('Segoe UI Variable Text'),local('Aptos'),local('SF Pro Text'),local('Segoe UI'),local('Helvetica Neue');font-weight:400 700;}
+  @font-face{font-family:'Space Grotesk';src:local('Aptos Display'),local('Segoe UI Variable Display'),local('SF Pro Display'),local('Segoe UI'),local('Helvetica Neue');font-weight:400 700;}
+  @font-face{font-family:'Hanken Grotesque';src:local('Aptos'),local('Segoe UI Variable Text'),local('SF Pro Text'),local('Segoe UI'),local('Helvetica Neue');font-weight:400 700;}
   @font-face{font-family:'JetBrains Mono';src:local('Cascadia Mono'),local('Cascadia Code'),local('SF Mono'),local('Menlo'),local('Consolas');font-weight:400 700;}"""
     local_fonts = """/* iOS build: web fonts aliased to system fonts (offline) */
   @font-face{font-family:'Space Grotesk';src:local('SF Pro Display'),local('Helvetica Neue');}
