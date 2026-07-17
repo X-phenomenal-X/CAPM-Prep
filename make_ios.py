@@ -8,9 +8,8 @@ Transform (keeps the single-file, zero-dependency constraint):
   1. Inject iOS/PWA head tags after the viewport meta: standalone display,
      status-bar style, app title, theme color, a data-URI apple-touch-icon,
      and a data-URI web app manifest.
-  2. Strip the Google Fonts @import (the pro build's only external fetch) so
-     the iOS build is fully offline-deterministic, and alias the three web
-     fonts to local iOS system fonts via @font-face local() sources.
+  2. Refine the cross-platform offline font aliases to iOS-native system
+     fonts via @font-face local() sources.
 
 Every replacement asserts its match count first, per the repo's editing
 workflow, so an upstream change that moves an anchor fails loudly here
@@ -93,17 +92,17 @@ def main():
 <link rel="manifest" href="{manifest_uri}">'''
     h = replace(h, viewport, ios_head)
 
-    # Fully offline: drop the Google Fonts fetch, alias the families to
-    # fonts that ship with iOS so the 100+ bare font-family refs still bind.
-    gimport = ("@import url('https://fonts.googleapis.com/css2?family="
-               "Space+Grotesk:wght@400;500;600;700&family="
-               "Hanken+Grotesque:wght@400;500;600;700&family="
-               "JetBrains+Mono:wght@500;700&display=swap');")
+    # Refine the cross-platform aliases to iOS-first families so the 100+
+    # bare font-family references bind to Apple's native typography offline.
+    system_fonts = """/* Cross-platform system aliases keep every build crisp and fully offline. */
+  @font-face{font-family:'Space Grotesk';src:local('Segoe UI Variable Display'),local('Aptos Display'),local('SF Pro Display'),local('Segoe UI'),local('Helvetica Neue');font-weight:400 700;}
+  @font-face{font-family:'Hanken Grotesque';src:local('Segoe UI Variable Text'),local('Aptos'),local('SF Pro Text'),local('Segoe UI'),local('Helvetica Neue');font-weight:400 700;}
+  @font-face{font-family:'JetBrains Mono';src:local('Cascadia Mono'),local('Cascadia Code'),local('SF Mono'),local('Menlo'),local('Consolas');font-weight:400 700;}"""
     local_fonts = """/* iOS build: web fonts aliased to system fonts (offline) */
   @font-face{font-family:'Space Grotesk';src:local('SF Pro Display'),local('Helvetica Neue');}
   @font-face{font-family:'Hanken Grotesque';src:local('SF Pro Text'),local('Helvetica Neue');}
   @font-face{font-family:'JetBrains Mono';src:local('SF Mono'),local('Menlo'),local('Courier New');}"""
-    h = replace(h, gimport, local_fonts)
+    h = replace(h, system_fonts, local_fonts)
 
     open(OUT, "w", encoding="utf-8").write(h)
     print(f"wrote {OUT} ({len(h):,} bytes)")
