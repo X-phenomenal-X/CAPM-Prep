@@ -4666,10 +4666,22 @@ GLOSS.push(
   }
 
   function renderHud(){
-    var gear=document.getElementById('gear'),top=gear&&gear.parentNode;
-    if(!gear||!top)return;
-    var actions=top.querySelector('.topActions');
-    if(!actions){actions=document.createElement('div');actions.className='topActions';top.insertBefore(actions,gear);actions.appendChild(gear);}
+    var gear=document.getElementById('gear');if(!gear)return;
+    /* Anchor to the topbar itself, NOT gear.parentNode. The first call moves
+       the gear inside .topActions, so on later calls gear.parentNode WAS
+       .topActions -- the lookup below then missed and nested a fresh
+       .topActions + HUD on every render, duplicating the chips and pushing
+       the page wider than the viewport. */
+    var top=document.querySelector('.topbar')||gear.parentNode;
+    if(!top)return;
+    var all=top.querySelectorAll('.topActions');
+    var actions=all[0]||null;
+    /* Collapse any duplicates a previous render already created. */
+    for(var z=all.length-1;z>0;z--){var d=all[z];if(d.parentNode)d.parentNode.removeChild(d);}
+    if(!actions){actions=document.createElement('div');actions.className='topActions';top.insertBefore(actions,gear);}
+    if(gear.parentNode!==actions)actions.appendChild(gear);
+    var extraHud=actions.querySelectorAll('.momentumHud');
+    for(var y=extraHud.length-1;y>0;y--){extraHud[y].parentNode.removeChild(extraHud[y]);}
     var hud=actions.querySelector('.momentumHud');
     if(!hud){hud=document.createElement('div');hud.className='momentumHud';actions.insertBefore(hud,gear);}
     var r=rewardModel(),s=streakStatus();
@@ -5179,5 +5191,19 @@ QUIZ.push(
   else watch();
 })();
 </script>
+
+<style>
+/* ===== OVERFLOW GUARD =====
+   A duplicated topbar HUD once made the page wider than the viewport, which
+   shifts every screen sideways and clips content at the left edge. The root
+   cause is fixed; this is a structural backstop so no future widening can
+   move the layout off-screen again. */
+html,body{max-width:100%;overflow-x:hidden;overscroll-behavior-x:none;}
+.topbar{max-width:100%;}
+.topActions{min-width:0;flex-shrink:1;}
+.momentumHud{min-width:0;flex-wrap:nowrap;overflow:hidden;}
+.logo{min-width:0;}
+.logo .t1,.logo .t2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+</style>
 </body>
 </html>
