@@ -5205,5 +5205,156 @@ html,body{max-width:100%;overflow-x:hidden;overscroll-behavior-x:none;}
 .logo{min-width:0;}
 .logo .t1,.logo .t2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 </style>
+
+<style>
+/* ===== TAP-TO-PAIR MATCHING =====
+   The native <select> stays in the DOM as the source of truth for grading and
+   for assistive tech; it is only visually replaced. Nothing about scoring
+   changes. */
+.matchq.tap .ms{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;}
+.matchq.tap .mrow{display:grid;grid-template-columns:1fr auto;align-items:center;
+  gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:var(--r3);
+  background:var(--panel);transition:border-color var(--d1) var(--eo),
+  background var(--d1) var(--eo),transform .12s var(--eo);}
+.matchq.tap .mrow.armed{border-color:var(--glass);background:rgba(118,196,216,.09);}
+.matchq.tap .mrow:active{transform:scale(.99);}
+.matchq.tap .ml{font-weight:640;font-size:13.5px;}
+
+.mslot{min-width:118px;min-height:38px;display:flex;align-items:center;
+  justify-content:center;padding:7px 10px;border-radius:var(--r2);
+  border:1.5px dashed var(--line);color:var(--mute2);font-size:12px;
+  text-align:center;transition:all var(--d1) var(--eo);}
+.mslot.filled{border-style:solid;border-color:var(--glass);
+  background:rgba(118,196,216,.12);color:var(--ink);font-weight:600;}
+
+.mpool{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 2px;}
+.mchip{padding:9px 12px;border-radius:var(--r2);border:1px solid var(--line);
+  background:var(--panel2);color:var(--ink);font:600 12.5px/1.25 var(--ui);
+  cursor:pointer;transition:transform .12s var(--eo),border-color var(--d1) var(--eo),
+  background var(--d1) var(--eo),opacity var(--d2) var(--eo);}
+.mchip:active{transform:scale(.96);}
+.mchip.picked{border-color:var(--glass);background:rgba(118,196,216,.16);
+  box-shadow:0 0 0 1px var(--glass);}
+.mchip.used{opacity:.28;pointer-events:none;}
+.mpoolLab{font:600 10.5px/1 var(--ui);letter-spacing:.09em;text-transform:uppercase;
+  color:var(--mute2);margin-top:12px;}
+
+/* graded states mirror onto the slot */
+.matchq.tap .mrow.ok .mslot{border-color:var(--green);background:rgba(98,204,131,.13);}
+.matchq.tap .mrow.no .mslot{border-color:var(--red);background:rgba(233,106,81,.12);}
+@keyframes slotIn{from{transform:scale(.9);opacity:.4;}to{transform:scale(1);opacity:1;}}
+.mslot.justSet{animation:slotIn .2s var(--es);}
+@media (prefers-reduced-motion:reduce){
+  .mslot.justSet{animation:none;}
+  .mchip,.mslot,.matchq.tap .mrow{transition:none;}
+}
+</style>
+<script>
+/* ===== TAP-TO-PAIR MATCHING — wiring ===== */
+(function(){
+  function enhance(){
+    var box=document.getElementById('matchq');
+    if(!box||box.dataset.tap==='1')return;
+    var rows=box.querySelectorAll('.mrow');
+    if(!rows.length)return;
+    var first=rows[0].querySelector('select.ms');
+    if(!first)return;
+    box.dataset.tap='1';box.classList.add('tap');
+
+    /* Read the answer pool from the select that the app already built. */
+    var pool=[];
+    Array.prototype.forEach.call(first.options,function(o){
+      if(o.value!=='')pool.push({v:o.value,label:o.textContent});
+    });
+
+    var wrap=document.createElement('div');wrap.className='mpool';
+
+    /* slot per row */
+    Array.prototype.forEach.call(rows,function(row){
+      var slot=document.createElement('div');
+      slot.className='mslot';slot.textContent='Tap to place';
+      row.appendChild(slot);
+      row.addEventListener('click',function(e){
+        if(e.target.closest&&e.target.closest('select'))return;
+        if(box.dataset.locked==='1')return;
+        var picked=wrap.querySelector('.mchip.picked');
+        if(picked){assign(row,picked.dataset.v);}
+        else if(row.dataset.v){clear(row);}
+        else{
+          Array.prototype.forEach.call(rows,function(r){r.classList.remove('armed');});
+          row.classList.add('armed');
+        }
+      });
+    });
+
+    var lab=document.createElement('div');
+    lab.className='mpoolLab';lab.textContent='Tap an answer, then tap its match';
+    pool.forEach(function(it){
+      var c=document.createElement('button');
+      c.type='button';c.className='mchip';c.dataset.v=it.v;c.textContent=it.label;
+      c.addEventListener('click',function(){
+        if(box.dataset.locked==='1')return;
+        var armed=box.querySelector('.mrow.armed');
+        if(armed){assign(armed,it.v);return;}
+        var was=c.classList.contains('picked');
+        Array.prototype.forEach.call(wrap.querySelectorAll('.mchip'),function(x){x.classList.remove('picked');});
+        if(!was)c.classList.add('picked');
+      });
+      wrap.appendChild(c);
+    });
+    box.parentNode.insertBefore(lab,box.nextSibling);
+    box.parentNode.insertBefore(wrap,lab.nextSibling);
+
+    function chipFor(v){return wrap.querySelector('.mchip[data-v="'+v+'"]');}
+
+    function clear(row){
+      var v=row.dataset.v;if(!v)return;
+      var ch=chipFor(v);if(ch)ch.classList.remove('used');
+      row.dataset.v='';
+      var sel=row.querySelector('select.ms');
+      if(sel){sel.value='';sel.dispatchEvent(new Event('change',{bubbles:true}));}
+      var slot=row.querySelector('.mslot');
+      slot.className='mslot';slot.textContent='Tap to place';
+    }
+
+    function assign(row,v){
+      /* one answer may only sit in one row */
+      Array.prototype.forEach.call(rows,function(r){if(r!==row&&r.dataset.v===v)clear(r);});
+      if(row.dataset.v&&row.dataset.v!==v)clear(row);
+      row.dataset.v=v;
+      var sel=row.querySelector('select.ms');
+      if(sel){sel.value=v;sel.dispatchEvent(new Event('change',{bubbles:true}));}
+      var ch=chipFor(v);
+      var slot=row.querySelector('.mslot');
+      slot.textContent=ch?ch.textContent:v;
+      slot.className='mslot filled justSet';
+      setTimeout(function(){slot.classList.remove('justSet');},240);
+      Array.prototype.forEach.call(wrap.querySelectorAll('.mchip'),function(x){x.classList.remove('picked');});
+      Array.prototype.forEach.call(rows,function(r){r.classList.remove('armed');});
+      Array.prototype.forEach.call(wrap.querySelectorAll('.mchip'),function(x){
+        var inUse=false;
+        Array.prototype.forEach.call(rows,function(r){if(r.dataset.v===x.dataset.v)inUse=true;});
+        x.classList.toggle('used',inUse);
+      });
+    }
+
+    /* Once the app grades the question it adds .ok/.no to rows — lock input. */
+    var mo=new MutationObserver(function(){
+      var graded=box.querySelector('.mrow.ok,.mrow.no');
+      if(graded)box.dataset.locked='1';
+    });
+    mo.observe(box,{attributes:true,subtree:true,attributeFilter:['class']});
+  }
+
+  function watch(){
+    enhance();
+    if(!window.MutationObserver)return;
+    new MutationObserver(function(){enhance();})
+      .observe(document.body,{childList:true,subtree:true});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',watch);
+  else watch();
+})();
+</script>
 </body>
 </html>
