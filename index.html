@@ -5198,7 +5198,7 @@ QUIZ.push(
    shifts every screen sideways and clips content at the left edge. The root
    cause is fixed; this is a structural backstop so no future widening can
    move the layout off-screen again. */
-html,body{max-width:100%;overflow-x:hidden;overscroll-behavior-x:none;}
+html,body{max-width:100%;}
 .topbar{max-width:100%;}
 .topActions{min-width:0;flex-shrink:1;}
 .momentumHud{min-width:0;flex-wrap:nowrap;overflow:hidden;}
@@ -5356,5 +5356,26 @@ html,body{max-width:100%;overflow-x:hidden;overscroll-behavior-x:none;}
   else watch();
 })();
 </script>
+
+<style>
+/* ===== BOTTOM FADE =====
+   The mobile nav is a floating pill inset from the screen edge, so scrolling
+   content was visible through the gap beneath it with a hard cut-off. This
+   scrim sits just under the nav (nav is z-index 30) and fades content out
+   into the background instead. Pointer-events none so it never blocks taps.
+   Desktop uses a sidebar nav, so it is scoped to mobile widths only. */
+@media (max-width:899px){
+  body::after{
+    content:'';position:fixed;left:0;right:0;bottom:0;
+    height:calc(104px + env(safe-area-inset-bottom));
+    pointer-events:none;z-index:29;
+    background:linear-gradient(180deg,
+      rgba(10,13,17,0) 0%,
+      rgba(10,13,17,.55) 42%,
+      rgba(10,13,17,.88) 70%,
+      var(--void) 100%);
+  }
+}
+</style>
 </body>
 </html>
